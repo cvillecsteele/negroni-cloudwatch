@@ -5,6 +5,12 @@
 
 AWS cloudwatch middleware for negroni.
 
+## Installation
+
+```shell
+go get -u github.com/cvillecsteele/negroni-cloudwatch
+```
+
 ## Usage
 
     package main
