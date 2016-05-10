@@ -13,8 +13,8 @@ AWS cloudwatch middleware for negroni.
             "fmt"
             "net/http"
 
-	    "github.com/aws/aws-sdk-go/aws"
-	    cw "github.com/aws/aws-sdk-go/service/cloudwatch"
+            "github.com/aws/aws-sdk-go/aws"
+            cw "github.com/aws/aws-sdk-go/service/cloudwatch"
 
             "github.com/gorilla/context"
             "github.com/codegangsta/negroni"
@@ -42,7 +42,7 @@ AWS cloudwatch middleware for negroni.
                                 Unit:      aws.String("Count"),
                                 Value:     aws.Float64(42),
                         },
-	            })
+                    })
                     w.WriteHeader(http.StatusOK)
                     fmt.Fprintf(w, "success!\n")
             })
