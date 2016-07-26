@@ -53,7 +53,7 @@ type Middleware struct {
 	clock timer
 
 	// Exclude URLs from logging
-	excludeURLs []string
+	excludeURLs map[string]struct{}
 }
 
 func New(region, namespace string) *Middleware {
@@ -66,6 +66,8 @@ func New(region, namespace string) *Middleware {
 		After:             DefaultAfter,
 
 		clock: &realClock{},
+
+		excludeURLs: map[string]struct{}{},
 	}
 	m.PutMetric = func(data []*cw.MetricDatum) {
 		putMetric(&m, data)
@@ -136,13 +138,17 @@ func (m *Middleware) ExcludeURL(u string) error {
 	if _, err := url.Parse(u); err != nil {
 		return err
 	}
-	m.excludeURLs = append(m.excludeURLs, u)
+	m.excludeURLs[u] = struct{}{}
 	return nil
 }
 
 // ExcludedURLs returns the list of excluded URLs for this middleware
 func (m *Middleware) ExcludedURLs() []string {
-	return m.excludeURLs
+	urls := []string{}
+	for k, _ := range m.excludeURLs {
+		urls = append(urls, k)
+	}
+	return urls
 }
 
 func (m *Middleware) ServeHTTP(rw http.ResponseWriter, r *http.Request, next http.HandlerFunc) {
@@ -154,10 +160,8 @@ func (m *Middleware) ServeHTTP(rw http.ResponseWriter, r *http.Request, next htt
 		m.After = DefaultAfter
 	}
 
-	for _, u := range m.excludeURLs {
-		if r.URL.Path == u {
-			return
-		}
+	if _, ok := m.excludeURLs[r.URL.Path]; ok {
+		return
 	}
 
 	start := m.clock.Now()
