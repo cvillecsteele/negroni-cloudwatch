@@ -20,6 +20,7 @@ import (
 	"fmt"
 	"net/http"
 	"net/url"
+	"os"
 	"time"
 
 	"github.com/codegangsta/negroni"
@@ -197,6 +198,8 @@ func DefaultBefore(m *Middleware, req *http.Request, remoteAddr string) {
 // DefaultAfter is the default func assigned to *Middleware.After
 func DefaultAfter(m *Middleware, req *http.Request, res negroni.ResponseWriter, latency time.Duration, remoteAddr string) {
 	ms := float64(latency.Nanoseconds() * 1000)
+	hostname, _ := os.Hostname()
+
 	m.PutMetric([]*cw.MetricDatum{
 		{
 			MetricName: aws.String(m.LatencyMetricName),
@@ -208,6 +211,10 @@ func DefaultAfter(m *Middleware, req *http.Request, res negroni.ResponseWriter, 
 				{
 					Name:  aws.String("RemoteAddr"),
 					Value: aws.String(remoteAddr),
+				},
+				{
+					Name:  aws.String("Hostname"),
+					Value: aws.String(hostname),
 				},
 			},
 			Timestamp: aws.Time(time.Now()),
