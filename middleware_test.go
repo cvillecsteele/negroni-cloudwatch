@@ -3,6 +3,7 @@ package negronicloudwatch
 import (
 	"net/http"
 	"net/http/httptest"
+	"os"
 	"testing"
 	"time"
 
@@ -62,11 +63,14 @@ func setupServeHTTP(t *testing.T) (*Middleware, negroni.ResponseWriter, *http.Re
 
 func TestMiddleware_ServeHTTP(t *testing.T) {
 	mw, rec, req := setupServeHTTP(t)
+	hostname, _ := os.Hostname()
 	mw.PutMetric = func(data []*cw.MetricDatum) {
 		assert.Len(t, data, 1)
-		assert.Len(t, data[0].Dimensions, 2)
+		assert.Len(t, data[0].Dimensions, 3)
 		assert.Equal(t, "10.10.10.10", *data[0].Dimensions[1].Value)
 		assert.Equal(t, "RemoteAddr", *data[0].Dimensions[1].Name)
+		assert.Equal(t, hostname, *data[0].Dimensions[2].Value)
+		assert.Equal(t, "Hostname", *data[0].Dimensions[2].Name)
 		assert.Equal(t, "Latency", *data[0].MetricName)
 		assert.Equal(t, "Microseconds", *data[0].Unit)
 	}
